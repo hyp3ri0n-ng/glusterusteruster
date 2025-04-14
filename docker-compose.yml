@@ -1,0 +1,55 @@
+version: '3'
+services:
+  guacd:
+    image: guacamole/guacd
+    container_name: guacd
+    restart: always
+
+  guacamole-db:
+    image: mysql:5.7
+    container_name: guac-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: guacroot
+      MYSQL_DATABASE: guacdb
+      MYSQL_USER: guacuser
+      MYSQL_PASSWORD: guacpass
+    volumes:
+      - guac-mysql:/var/lib/mysql
+
+  guacamole:
+    image: guacamole/guacamole
+    container_name: guacamole
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      MYSQL_DATABASE: guacdb
+      MYSQL_USER: guacuser
+      MYSQL_PASSWORD: guacpass
+      MYSQL_HOSTNAME: guacamole-db
+      GUACD_HOSTNAME: guacd
+
+  guac-bootstrap:
+    image: thehp.velociraptor.teeth.ts.net/guac-bootstrap:latest
+    container_name: guac-bootstrap
+    restart: on-failure
+    depends_on:
+      - guacamole-db
+    volumes:
+      - ./config:/mnt/config:ro
+    environment:
+      - GUAC_DB_HOST=guacamole-db
+      - GUAC_DB_USER=guacuser
+      - GUAC_DB_PASS=guacpass
+      - GUAC_DB_NAME=guacdb
+
+  guac-dashboard:
+    build: ./guac-dashboard/api
+    container_name: guac-dashboard
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+
+volumes:
+  guac-mysql:

@@ -1,0 +1,4 @@
+# name,host,port,user
+main-laptop,192.168.1.10,22,alice
+minipc4,100.75.172.22,22,root
+bamfdell,100.80.18.90,2222,root
